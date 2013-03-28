@@ -1,0 +1,20 @@
+{
+  "name": "panlex",
+  "description": "PanLex API for node",
+  "version": "0.0.1",
+  "author": {
+    "name": "David Kamholz",
+    "email": "kamholz@panlex.org"
+  },
+  "dependencies": {
+    "request": "~2.16.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kamholz/node-panlex"
+  },
+  "main": "index",
+  "engines": {
+    "node": "*"
+  }
+}
