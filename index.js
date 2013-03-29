@@ -39,7 +39,7 @@ function queryAll(url, body, cb) {
       if (err) cb(err);
       
       if (result) {
-        result.result.push(thisResult.result);
+        Array.prototype.push.apply(result.result, thisResult.result);
         result.resultNum += thisResult.resultNum;
       } 
       else result = thisResult;
