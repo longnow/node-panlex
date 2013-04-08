@@ -1,6 +1,6 @@
 var request = require('request');
 
-var API_URL = 'http://api.panlex.org';
+var API_URL = process.env.PANLEX_API || 'http://api.panlex.org';
 
 function query(url, body, cb) {
   if (body instanceof Function) {
