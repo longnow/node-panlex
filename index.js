@@ -20,21 +20,28 @@ function query(url, body, cb) {
   .on('error', function (err) {
     cb(err);
   })
-  .on('response', function (res) {
-    if (res.statusCode != 200) 
-      return cb(new Error('PanLex API returned HTTP status code ' + res.statusCode));
-    
+  .on('response', function (res) {    
     if (res.headers['content-encoding'] === 'gzip')
       res = res.pipe(zlib.createGunzip());      
     
     var body = '';
+
     res.on('data', function (chunk) {
       body += chunk;
     });
+    
     res.on('end', function () {
-      body = JSON.parse(body);
-      if (body.status === 'error') cb(new Error('PanLex API returned error: ' + body.error));
-      else cb(null, body);      
+      try {
+        body = JSON.parse(body);        
+      } catch (err) {
+        return cb(new Error('PanLex API returned invalid JSON'), body);
+      }
+      
+      var err = res.statusCode === 200
+        ? null
+        : new Error('PanLex API returned HTTP status code ' + res.statusCode);
+      
+      cb(err, body);
     });
   });
 }
@@ -52,7 +59,7 @@ function queryAll(url, body, cb) {
   
   function loop() {
     query(url, bodyCopy, function (err, thisResult) {
-      if (err) cb(err);
+      if (err) cb(err, thisResult);
       
       if (result) {
         Array.prototype.push.apply(result.result, thisResult.result);
