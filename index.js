@@ -41,7 +41,7 @@ function query(url, body, cb) {
       
       var err = statusCode === 200
         ? null
-        : new Error('PanLex API returned HTTP status code ' + res.statusCode);
+        : new Error('PanLex API returned HTTP status code ' + statusCode);
       
       cb(err, body);
     });
