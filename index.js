@@ -20,7 +20,9 @@ function query(url, body, cb) {
   .on('error', function (err) {
     cb(err);
   })
-  .on('response', function (res) {    
+  .on('response', function (res) {
+    var statusCode = res.statusCode;
+    
     if (res.headers['content-encoding'] === 'gzip')
       res = res.pipe(zlib.createGunzip());      
     
@@ -37,7 +39,7 @@ function query(url, body, cb) {
         return cb(new Error('PanLex API returned invalid JSON'), body);
       }
       
-      var err = res.statusCode === 200
+      var err = statusCode === 200
         ? null
         : new Error('PanLex API returned HTTP status code ' + res.statusCode);
       
