@@ -61,7 +61,7 @@ function queryAll(url, body, cb) {
   
   function loop() {
     query(url, bodyCopy, function (err, thisResult) {
-      if (err) cb(err, thisResult);
+      if (err) return cb(err, thisResult);
       
       if (result) {
         Array.prototype.push.apply(result.result, thisResult.result);
