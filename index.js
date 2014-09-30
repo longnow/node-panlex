@@ -18,7 +18,7 @@ setUserAgent('Unknown application', '?');
 function setUserAgent(appName, version) {
   panlex.userAgent = appName + '/' + version 
     + ' (Language=node.js/' + process.version
-    + '; Client=' + require('./package').version
+    + '; Client=' + require('./package.json').version
     + '; Platform=' + process.platform + ')';
 }
 
