@@ -1,13 +1,13 @@
 {
   "name": "panlex",
   "description": "PanLex API for node",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "David Kamholz",
     "email": "kamholz@panlex.org"
   },
   "dependencies": {
-    "hyperquest": "~0.2.0",
+    "hyperquest": "~0.3.0",
     "limiter": "~1.0.4"
   },
   "repository": {
