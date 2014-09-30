@@ -7,10 +7,19 @@ var limiter = new RateLimiter(120, 'minute');
 var API_URL = process.env.PANLEX_API || 'http://api.panlex.org';
 
 var panlex = module.exports = {
+  setUserAgent: setUserAgent,
   query: query,
   queryAll: queryAll,
   limit: true
 };
+
+setUserAgent('Unknown application', '?');
+
+function setUserAgent(appName, version) {
+  panlex.userAgent = appName + '/' + version 
+    + ' (Language=node.js/' + process.version
+    + '; Platform=' + process.platform + ')';
+}
 
 function query(url, body, cb) {
   if (body instanceof Function) {
@@ -65,7 +74,11 @@ function queryAll(url, body, cb) {
 function _query(url, body, cb) {
   var req = hyperquest.post({
       uri: url,
-      headers: { 'Content-type': 'application/json', 'Accept-encoding': 'gzip' }
+      headers: { 
+        'Content-type': 'application/json', 
+        'Accept-encoding': 'gzip',
+        'User-agent': panlex.userAgent
+      }
   })
   .on('error', function (err) {
     cb(err);
