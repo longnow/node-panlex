@@ -3,6 +3,7 @@ var zlib = require('zlib');
 
 var RateLimiter = require('limiter').RateLimiter;
 var limiter = new RateLimiter(120, 'minute');
+limiter.tokenBucket.bucketSize = 30;
 
 var API_URL = process.env.PANLEX_API || 'http://api.panlex.org';
 
