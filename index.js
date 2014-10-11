@@ -5,13 +5,12 @@ var RateLimiter = require('limiter').RateLimiter;
 var limiter = new RateLimiter(120, 'minute');
 limiter.tokenBucket.bucketSize = 30;
 
-var API_URL = process.env.PANLEX_API || 'http://api.panlex.org';
-
 var panlex = module.exports = {
   setUserAgent: setUserAgent,
   query: query,
   queryAll: queryAll,
-  limit: true
+  limit: true,
+  endpoint: process.env.PANLEX_API || 'http://api.panlex.org'
 };
 
 setUserAgent('Unknown application', '?');
@@ -29,7 +28,7 @@ function query(url, body, cb) {
     body = {};
   }
   
-  url = url.match(/^\//) ? API_URL + url : url;
+  url = url.match(/^\//) ? panlex.endpoint + url : url;
   
   if (panlex.limit) {
     limiter.removeTokens(1, function (err) {
