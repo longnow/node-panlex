@@ -93,7 +93,7 @@ function queryAll(url, body, cb) {
 }
 
 function queryStream(url, body) {
-  var stream = through2({ objectMode: true });
+  var stream = through2.obj();
 
   callWhenReady(_queryStream, [url, body, stream]);
 
@@ -129,7 +129,7 @@ function _queryStream(url, body, stream) {
 }
 
 function queryStreamAll(url, body) {
-  var stream = through2({ objectMode: true });
+  var stream = through2.obj();
 
   body = copyBody(body);
   loop();
