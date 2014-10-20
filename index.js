@@ -107,14 +107,22 @@ function _queryStream(url, body, stream) {
   })
   .on('response', function (res) {
     var err = getError(res);
-    if (err) stream.emit('error', err);
-
     res = decode(res);
-    res.pipe(JSONStream.parse(err ? null : 'result.*'))
-    .on('root', function (root, count) {
-      stream.emit('root', root, count);
-    })
-    .pipe(stream);
+
+    if (err) {
+      res.pipe(JSONStream.parse())
+      .once('data', function (data) {
+        stream.emit('error', err, data);
+        stream.end();
+      });
+    }
+    else {
+      res.pipe(JSONStream.parse('result.*'))
+      .on('root', function (root, count) {
+        stream.emit('root', root, count);
+      })
+      .pipe(stream);
+    }
   });
 
   writeBody(req, body);
@@ -129,21 +137,17 @@ function queryStreamAll(url, body) {
   return stream;
   
   function loop() {
-    var err;
+    var gotErr;
 
     queryStream(url, body)
-    .on('error', function (e) {
-      err = e;
+    .on('error', function (err, data) {
+      stream.emit('error', err, data);
+      gotErr = true;
     })
     .on('end', function () {
-      if (err) {
-        stream.emit('error', err);
-        stream.end();
-      }
+      if (gotErr) stream.end();
     })
     .on('root', function (root, count) {
-      if (err) return;
-      
       if (count < root.resultMax) stream.end();
       else {
         body.offset += count;
