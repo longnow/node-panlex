@@ -11,10 +11,10 @@ This module provides convenience methods to access the [PanLex API](http://dev.p
 Callback style:
 
     // do a single request
-    panlex.query('/lv', {}, function (err, result) { ... });
+    panlex.query('/lv', {}, function (err, data) { ... });
     
     // loop until all results are received
-    panlex.queryAll('/lv', {}, function (err, result) { ... });
+    panlex.queryAll('/lv', {}, function (err, data) { ... });
 
 Stream style (works for requests that return a `result` array):
 
