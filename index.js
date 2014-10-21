@@ -36,7 +36,7 @@ function query(url, body, cb) {
 }
 
 function _query(url, body, cb) {
-  var req = createRequest(url)
+  var req = createRequest(url, 'application/json')
   .on('error', cb)
   .on('response', function (res) {
     var err = getError(res);
@@ -101,7 +101,7 @@ function queryStream(url, body) {
 }
 
 function _queryStream(url, body, stream) {
-  var req = createRequest(url, 'application/x-json-stream')
+  var req = createRequest(url, 'application/x-json-stream,application/json')
   .on('error', function (err) {
     stream.emit('error', err);
   })
