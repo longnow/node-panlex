@@ -45,12 +45,10 @@ function _query(url, body, cb) {
     var body = '';
 
     res.on('data', function (chunk) {
-      console.log('got data');
       body += chunk;
     });
     
     res.on('end', function () {
-      console.log('got end');
       try {
         body = JSON.parse(body);
       } catch (e) {
