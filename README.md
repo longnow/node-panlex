@@ -16,7 +16,7 @@ Callback style:
     // loop until all results are received
     panlex.queryAll('/lv', {}, function (err, data) { ... });
 
-Stream style (works for requests that return a `result` array):
+Stream style:
 
     // do a single request
     panlex.queryStream('/lv', {})
