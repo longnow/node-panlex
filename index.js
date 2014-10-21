@@ -1,4 +1,4 @@
-var hyperquest = require('hyperquest');
+var request = require('request');
 var JSONStream = require('JSONStream');
 var through2 = require('through2');
 var zlib = require('zlib');
@@ -45,10 +45,12 @@ function _query(url, body, cb) {
     var body = '';
 
     res.on('data', function (chunk) {
+      console.log('got data');
       body += chunk;
     });
     
     res.on('end', function () {
+      console.log('got end');
       try {
         body = JSON.parse(body);
       } catch (e) {
@@ -179,7 +181,7 @@ function createRequest(url, accept) {
 
   if (accept) headers.accept = accept;
 
-  return hyperquest.post({ uri: url, headers: headers });
+  return request.post({ uri: url, headers: headers });
 }
 
 function writeBody(req, body) {
