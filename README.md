@@ -1,4 +1,4 @@
-This module provides convenience methods to access the [PanLex API](http://dev.panlex.org/api/).
+This module provides convenience methods to access the [PanLex API](https://dev.panlex.org/api/).
 
     var panlex = require('panlex');
     
