@@ -66,6 +66,7 @@ function queryAll(url, body, method, cb) {
   if (body instanceof Function) {
     cb = body;
     body = {};
+    method = 'offset';
   }
 
   if (method instanceof Function) {
@@ -75,11 +76,10 @@ function queryAll(url, body, method, cb) {
 
   body = copyBody(body);
 
-  var loop;
-  var result;
+  var loop, result;
 
   if (method === 'offset') {
-    body.offset = 0;
+    body.offset = body.offset || 0;
 
     loop = function loop() {
       query(url, body, function (err, thisResult) {
@@ -101,6 +101,7 @@ function queryAll(url, body, method, cb) {
   }
   else if (method === 'after') {
     var afterParams = getAfterParams(url, body);
+    delete body.offset;
 
     loop = function loop() {
       query(url, body, function (err, thisResult) {
@@ -114,15 +115,13 @@ function queryAll(url, body, method, cb) {
 
         if (thisResult.resultNum < thisResult.resultMax) cb(null, result);
         else {
-          body.after = getAfterValue(thisResult.result[thisResult.result.length - 1], afterParams);
+          body.after = getAfterValues(thisResult.result[thisResult.result.length - 1], afterParams);
           loop();
         }
       });
     };
   }
-  else {
-    throw 'unknown method: valid values are "offset" and "after"';
-  }
+  else unknownMethodError();
 
   loop();
 }
@@ -171,7 +170,7 @@ function queryStreamAll(url, body, method) {
   var loop;
 
   if (method === undefined || method === 'offset') {
-    body.offset = 0;
+    body.offset = body.offset || 0;
 
     loop = function loop() {
       var gotErr;
@@ -196,13 +195,13 @@ function queryStreamAll(url, body, method) {
   }
   else if (method === 'after') {
     var afterParams = getAfterParams(url, body);
+    delete body.offset;
 
     loop = function loop() {
-      var gotErr;
-      var last;
+      var gotErr, last;
 
       queryStream(url, body)
-      .on('data', function (data) {
+      .on('data', function (data) { // save latest result
         last = data;
       })
       .on('error', function (err, data) {
@@ -215,16 +214,14 @@ function queryStreamAll(url, body, method) {
       .on('root', function (root, count) {
         if (count < root.resultMax) stream.end();
         else {
-          body.after = getAfterValue(last, afterParams);
+          body.after = getAfterValues(last, afterParams);
           loop();
         }
       })
       .pipe(stream, { end: false });
     };
   }
-  else {
-    throw 'unknown method: valid values are "offset" and "after"';
-  }
+  else unknownMethodError();
 
   loop();
 
@@ -274,10 +271,11 @@ function decode(res) {
 
 function copyBody(body) {
   var copy = {};
-  for (var i in body) copy[i] = body[i];
-  delete copy.limit;
-  delete copy.offset;
-  delete copy.after;
+
+  for (var i in body) {
+    if (i !== 'limit') copy[i] = body[i];
+  }
+
   return copy;
 }
 
@@ -286,17 +284,21 @@ function getAfterParams(url, body) {
     var sort = body.sort;
     if (!(sort instanceof Array)) sort = [sort];
 
-    return sort.map(function (item) { return item.replace(/ +(?:asc|desc)/gi, '') });
+    return sort.map(function (item) { return item.replace(/ (?:asc|desc)$/gi, '') });
   }
   else {
     var match = url.match(/\/([a-z]+)$/);
 
     if (match) return [match[1]];
 
-    throw 'could not automatically guess "after" field from ' + url;
+    throw 'could not automatically guess "after" field from URL: ' + url;
   }
 }
 
-function getAfterValue(last, afterParams) {
+function getAfterValues(last, afterParams) {
   return afterParams.map(function (item) { return last[item] });
+}
+
+function unknownMethodError() {
+  throw 'unknown method: valid values are "offset" and "after"';
 }
