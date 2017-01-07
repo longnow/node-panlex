@@ -100,8 +100,9 @@ function queryAll(url, body, method, cb) {
     };
   }
   else if (method === 'after') {
+    checkAfterOffset(body);
+
     var afterParams = getAfterParams(url, body);
-    delete body.offset;
 
     loop = function loop() {
       query(url, body, function (err, thisResult) {
@@ -194,8 +195,9 @@ function queryStreamAll(url, body, method) {
     };
   }
   else if (method === 'after') {
+    checkAfterOffset(body);
+
     var afterParams = getAfterParams(url, body);
-    delete body.offset;
 
     loop = function loop() {
       var gotErr, last;
@@ -271,10 +273,10 @@ function decode(res) {
 
 function copyBody(body) {
   var copy = {};
+  for (var i in body) copy[i] = body[i];
 
-  for (var i in body) {
-    if (i !== 'limit') copy[i] = body[i];
-  }
+  if (copy.limit !== undefined)
+    throw 'the limit parameter is incompatible with queryAll and queryStreamAll';
 
   return copy;
 }
@@ -301,4 +303,9 @@ function getAfterValues(last, afterParams) {
 
 function unknownMethodError() {
   throw 'unknown method: valid values are "offset" and "after"';
+}
+
+function checkAfterOffset(body) {
+  if (body.offset !== undefined)
+    throw 'the offset parameter is incompatible with the "after" method';
 }
