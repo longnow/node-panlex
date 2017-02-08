@@ -14,7 +14,7 @@ var panlex = module.exports = {
   queryStream: queryStream,
   queryStreamAll: queryStreamAll,
   limit: true,
-  endpoint: process.env.PANLEX_API || 'https://api.panlex.org'
+  endpoint: process.env.PANLEX_API || 'https://api.panlex.org/v2'
 };
 
 setUserAgent('Unknown application', '?');
