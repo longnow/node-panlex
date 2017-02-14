@@ -13,11 +13,19 @@ var panlex = module.exports = {
   queryAll: queryAll,
   queryStream: queryStream,
   queryStreamAll: queryStreamAll,
+  version: version,
   limit: true,
   endpoint: process.env.PANLEX_API || 'https://api.panlex.org/v2'
 };
 
 setUserAgent('Unknown application', '?');
+
+function version(num) {
+  if (process.env.PANLEX_API === undefined) {
+    if (num === 1) panlex.endpoint = 'https://api.panlex.org';
+    else panlex.endpoint = 'https://api.panlex.org/v' + num;
+  }
+}
 
 function setUserAgent(appName, version) {
   panlex.userAgent = appName + '/' + version
