@@ -14,21 +14,7 @@ This module provides convenience methods to access the [PanLex API](https://dev.
 Callback style:
 
     // do a single request
-    panlex.query('/lv', {}, function (err, data) { ... });
+    panlex.query('/langvar', {}, function (err, data) { ... });
 
     // loop until all results are received
-    panlex.queryAll('/lv', {}, function (err, data) { ... });
-
-Stream style:
-
-    // do a single request
-    panlex.queryStream('/lv', {})
-      .on('data', function (lv) { ... }) // single lv object
-      .on('error', function (err) { ... })
-      .on('end', function () { ... });
-
-    // loop until all results are received
-    panlex.queryStreamAll('/lv', {})
-      .on('data', function (lv) { ... }) // single lv object
-      .on('error', function (err) { ... })
-      .on('end', function () { ... });
+    panlex.queryAll('/langvar', {}, function (err, data) { ... });

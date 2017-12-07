@@ -1,16 +1,15 @@
 {
   "name": "panlex",
   "description": "PanLex API for node",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "author": {
     "name": "David Kamholz",
     "email": "kamholz@panlex.org"
   },
+  "license": "MIT",
   "dependencies": {
-    "JSONStream": "^0.9.0",
     "limiter": "^1.0.4",
-    "request": "^2.45.0",
-    "through2": "^0.6.3"
+    "request": "^2.45.0"
   },
   "repository": {
     "type": "git",

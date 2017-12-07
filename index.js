@@ -1,6 +1,4 @@
 var request = require('request');
-var JSONStream = require('JSONStream');
-var through2 = require('through2');
 var zlib = require('zlib');
 
 var RateLimiter = require('limiter').RateLimiter;
@@ -11,8 +9,6 @@ var panlex = module.exports = {
   setUserAgent: setUserAgent,
   query: query,
   queryAll: queryAll,
-  queryStream: queryStream,
-  queryStreamAll: queryStreamAll,
   version: version,
   limit: true,
   endpoint: process.env.PANLEX_API || 'https://api.panlex.org/v2'
@@ -133,109 +129,6 @@ function queryAll(url, body, method, cb) {
   else unknownMethodError();
 
   loop();
-}
-
-function queryStream(url, body) {
-  var stream = through2.obj();
-
-  callWhenReady(_queryStream, [url, body, stream]);
-
-  return stream;
-}
-
-function _queryStream(url, body, stream) {
-  var req = createRequest(url, 'application/x-json-stream,application/json')
-  .on('error', function (err) {
-    stream.emit('error', err);
-  })
-  .on('response', function (res) {
-    var err = getError(res);
-    res = decode(res);
-
-    if (err) {
-      res.pipe(JSONStream.parse())
-      .once('data', function (data) {
-        stream.emit('error', err, data);
-        stream.end();
-      });
-    }
-    else {
-      res.pipe(JSONStream.parse('result.*'))
-      .on('root', function (root, count) {
-        stream.emit('root', root, count);
-      })
-      .pipe(stream);
-    }
-  });
-
-  writeBody(req, body);
-}
-
-function queryStreamAll(url, body, method) {
-  var stream = through2.obj();
-
-  body = copyBody(body);
-
-  var loop;
-
-  if (method === undefined || method === 'offset') {
-    body.offset = body.offset || 0;
-
-    loop = function loop() {
-      var gotErr;
-
-      queryStream(url, body)
-      .on('error', function (err, data) {
-        stream.emit('error', err, data);
-        gotErr = true;
-      })
-      .on('end', function () {
-        if (gotErr) stream.end();
-      })
-      .on('root', function (root, count) {
-        if (count < root.resultMax) stream.end();
-        else {
-          body.offset += count;
-          loop();
-        }
-      })
-      .pipe(stream, { end: false });
-    };
-  }
-  else if (method === 'after') {
-    checkAfterOffset(body);
-
-    var afterParams = getAfterParams(url, body);
-
-    loop = function loop() {
-      var gotErr, last;
-
-      queryStream(url, body)
-      .on('data', function (data) { // save latest result
-        last = data;
-      })
-      .on('error', function (err, data) {
-        stream.emit('error', err, data);
-        gotErr = true;
-      })
-      .on('end', function () {
-        if (gotErr) stream.end();
-      })
-      .on('root', function (root, count) {
-        if (count < root.resultMax) stream.end();
-        else {
-          body.after = getAfterValues(last, afterParams);
-          loop();
-        }
-      })
-      .pipe(stream, { end: false });
-    };
-  }
-  else unknownMethodError();
-
-  loop();
-
-  return stream;
 }
 
 function callWhenReady(f, args) {
