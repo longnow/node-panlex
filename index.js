@@ -1,5 +1,4 @@
 var request = require('request');
-var zlib = require('zlib');
 
 var RateLimiter = require('limiter').RateLimiter;
 var limiter = new RateLimiter(120, 'minute');
@@ -40,30 +39,32 @@ function query(url, body, cb) {
 }
 
 function _query(url, body, cb) {
-  var req = createRequest(url, 'application/json')
-  .on('error', cb)
-  .on('response', function (res) {
-    var err = getError(res);
-    res = decode(res);
+  url = url.match(/^\//) ? panlex.endpoint + url : url;
 
-    var body = '';
+  request.post({
+    uri: url,
+    headers: {
+      'accept': 'application/json',
+      'content-type': 'application/json',
+      'user-agent': panlex.userAgent
+    },
+    body: JSON.stringify(body || {}),
+    gzip: true
+  }, function (err, res, body) {
+    if (err) return cb(err, body);
 
-    res.on('data', function (chunk) {
-      body += chunk;
-    });
+    err = res.statusCode === 200
+      ? null
+      : new Error('PanLex API returned HTTP status code ' + res.statusCode);
 
-    res.on('end', function () {
-      try {
-        body = JSON.parse(body);
-      } catch (e) {
-        return cb(new Error('PanLex API returned invalid JSON'), body);
-      }
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      return cb(new Error('PanLex API returned invalid JSON'), body);
+    }
 
-      cb(err, body);
-    });
+    return cb(err, body);
   });
-
-  writeBody(req, body);
 }
 
 function queryAll(url, body, method, cb) {
@@ -141,35 +142,16 @@ function callWhenReady(f, args) {
   else f.apply(null, args);
 }
 
-function createRequest(url, accept) {
+function createRequest(url) {
   url = url.match(/^\//) ? panlex.endpoint + url : url;
 
   var headers = {
+    'accept': 'application/json',
     'content-type': 'application/json',
-    'accept-encoding': 'gzip',
     'user-agent': panlex.userAgent
   };
 
-  if (accept) headers.accept = accept;
-
-  return request.post({ uri: url, headers: headers });
-}
-
-function writeBody(req, body) {
-  req.write(JSON.stringify(body || {}));
-  req.end();
-}
-
-function getError(res) {
-  return res.statusCode === 200
-    ? null
-    : new Error('PanLex API returned HTTP status code ' + res.statusCode);
-}
-
-function decode(res) {
-  return res.headers['content-encoding'] === 'gzip'
-    ? res.pipe(zlib.createGunzip())
-    : res;
+  return request.post({ uri: url, headers: headers, gzip: true });
 }
 
 function copyBody(body) {
